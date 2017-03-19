@@ -1,0 +1,6 @@
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\bin\Debug\BlackJackGame.exe.config
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\bin\Debug\BlackJackGame.exe
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\bin\Debug\BlackJackGame.pdb
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.csprojResolveAssemblyReference.cache
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.exe
+C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.pdb
