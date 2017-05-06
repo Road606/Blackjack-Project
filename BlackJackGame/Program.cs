@@ -1,116 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BlackJackGame
+
+namespace BlackJack
 {
-    // GAME States
-    public enum GameResult { Win = 1, Lose = -1, Draw = 0, Pending = 2};
+    public enum GameResult { Win = 1, Lose = -1, Draw = 0, Pending = 2 }
 
-    /// <summary>
-    /// Moje karty
-    /// </summary>
-    public class Card
+
+
+    public struct Card
     {
-        public string ID { get; set; }
-        public string Suit { get; set; }
-        public int Value { get; set; }
+        public string ID;
+        public string Suit;
+        public int Value;
 
         public Card(string id, string suit, int value)
         {
-            ID = id;
-            Suit = suit;
-            Value = value;
+            this.ID = id;
+            this.Suit = suit;
+            this.Value = value;
         }
     }
 
-    /// <summary>
-    /// Balíček karet
-    /// </summary>
-    public class Deck : Stack<Card>
+    public struct Deck
     {
-        public Deck(IEnumerable<Card> collection) : base(collection) { }
-        public Deck() : base(52) { }
+        public Stack<Card> deck;
 
-        public Card this[int index]
+
+        public Deck(Card[] card) : this()
         {
-            get
+            deck = new Stack<Card>();
+            foreach (Card item in card)
             {
-                Card item;
-                if (index >= 0 && index <= this.Count - 1)
-                {
-                    item = this.ToArray()[index];
-                }
-                else
-                {
-                    item = null;
-                }
 
-                return item;
+                this.deck.Push(item);
             }
+
+
         }
 
-        /// <summary>
-        /// Hodnota karty
-        /// </summary>
-        public double Value
+        public void Init()
         {
-            get
-            {
-                return BlackJackRules.HandValue(this);
-            }
+            this.deck = new Stack<Card>();
+        }
+
+        public double Value()
+        {
+            return BlackJackRules.HandValue(this);
+        }
+
+
+    }
+    public struct Member
+    {
+        public Deck Hand;
+        public int Credit;
+
+        public Member(int credit)
+        {
+            Hand = new Deck();
+            Hand.Init();
+            Credit = credit;
         }
     }
 
-    /// <summary>
-    /// Uživatelé:
-    /// Dealer
-    /// Hráč
-    /// </summary>
-    public class Member
-        {
-             public Deck Hand;
-            public Member()
-            {
-                Hand = new Deck();
-            }
-        }
 
-    /// <summary>
-    /// Pravidla hry.
-    /// Nastavení: barvy a hodnoty karet.
-    /// </summary>
-    public static class BlackJackRules
-        {
-            // Hodnoty karet
-            public static string[] ids = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "J", "K", "Q" };
+    public struct BlackJackRules
+    {
+        // Hodnoty karet
+        public static string[] ids = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "J", "K", "Q" };
 
         // Barvy karet    
         public static string[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
 
-            // Vrací nový balíček karet
-            public static Deck NewDeck
+
+        // Vrací nový balíček karet
+        public static Deck Newdeck
+        {
+            get
             {
-               get
-                 {
-                    Deck d = new Deck();
-                    int value;
+                Deck d = new Deck();
+                d.Init();
+                int value;
 
-                    foreach (string suit in suits)
+                foreach (string suit in suits)
+                {
+                    foreach (string id in ids)
                     {
-                        foreach (string id in ids)
-                        {
-                            value = Int32.TryParse(id, out value) ? value : id == "A" ? 1 : 10;
-                            d.Push(new Card(id, suit, value));
-                        }
+                        value = Int32.TryParse(id, out value) ? value : id == "A" ? 1 : 10;
+                        d.deck.Push(new Card(id, suit, value));
                     }
-                    return d;
-                 }
-             }
+                }
+                return d;
 
+            }
+        }
         /// <summary>
         /// Vrací zamíchaný balíček karet
         /// </summary>
@@ -118,7 +103,7 @@ namespace BlackJackGame
         {
             get
             {
-                return new Deck(NewDeck.OrderBy(card => System.Guid.NewGuid()).ToArray());
+                return new Deck(Newdeck.deck.OrderBy(card => Guid.NewGuid()).ToArray());
             }
         }
 
@@ -129,19 +114,17 @@ namespace BlackJackGame
         /// <returns></returns>
         public static double HandValue(Deck deck)
         {
-            int val1 = deck.Sum(c => c.Value);
+            int val1 = deck.deck.Sum(c => c.Value);
 
-            double aces = deck.Count(c => c.Suit == "A");
+            double aces = deck.deck.Count(c => c.ID == "A");
             double val2 = aces > 0 ? val1 + (10 * aces) : val1;
 
             return new double[] { val1, val2 }
-                .Select(handVal => new
-                {
-                    handVal,
-                    weight = Math.Abs(handVal - 21) + (handVal > 21 ? 100 : 0)
-                })
-                .OrderBy(n => n.weight)
-                .First().handVal;
+            .Select(handVal => new
+            {
+                handVal,
+                weight = Math.Abs(handVal - 21) + (handVal > 21 ? 100 : 0)
+            }).OrderBy(n => n.weight).First().handVal;
         }
 
         /// <summary>
@@ -150,7 +133,7 @@ namespace BlackJackGame
         /// </summary>
         public static bool CanDealerHit(Deck deck, int standLimit)
         {
-            return deck.Value < standLimit;
+            return deck.Value() < standLimit;
         }
 
         /// <summary>
@@ -160,7 +143,7 @@ namespace BlackJackGame
         /// <returns></returns>
         public static bool CanPlayerHit(Deck deck)
         {
-            return deck.Value < 21;
+            return deck.Value() < 21;
         }
 
         /// <summary>
@@ -177,10 +160,10 @@ namespace BlackJackGame
             double dealerValue = HandValue(dealer.Hand);
 
             // hráč může zvítězit, pokud...
-            if(playerValue <= 21)
+            if (playerValue <= 21)
             {
                 // a ...
-                if(playerValue != dealerValue)
+                if (playerValue != dealerValue)
                 {
                     double closestValue = new double[] { playerValue, dealerValue }
                     .Select(handVal => new { handVal, weight = Math.Abs(handVal - 21) + (handVal > 21 ? 100 : 0) })
@@ -201,39 +184,25 @@ namespace BlackJackGame
 
             return result;
         }
-    }
 
-    /// <summary>
-    /// Příprava a začátek hry
-    /// </summary>
-    public class BlackJack
+    }
+    public struct BlackJack
     {
-        public Member Dealer = new Member();
-        public Member Player = new Member();
-        public GameResult Result { get; set; }
+        public Member Dealer;
+        public Member Player;
+        public GameResult Result;
 
         public Deck MainDeck;
 
-        public int StandLimit { get; set; }
-        public BlackJack(int dealerStandLimit)
+        public int StandLimit;
+        public BlackJack(int dealerStandLimit) : this()
         {
-            // Příprava hry ..
-            Result = GameResult.Pending;
-            StandLimit = dealerStandLimit;
-
             // Zamíchá karty a položí na stůl.
+            Dealer = new Member(0);
+            Player = new Member(100);
+            StandLimit = dealerStandLimit;
             MainDeck = BlackJackRules.ShuffledDeck;
-
-            // Vyčistí ruce hráčů a Dealerů (i rukávy :) )
-            Dealer.Hand.Clear();
-            Player.Hand.Clear();
-
-            // Přiřadí první dvě karty hráči a Dealerovi...
-            for(int i = 0; ++i < 3;)
-            {
-                Dealer.Hand.Push(MainDeck.Pop());
-                Player.Hand.Push(MainDeck.Pop());
-            }
+            this.Init();
         }
 
         /// <summary>
@@ -241,9 +210,9 @@ namespace BlackJackGame
         /// </summary>
         public void Hit()
         {
-            if(BlackJackRules.CanPlayerHit(Player.Hand) && Result == GameResult.Pending)
+            if (BlackJackRules.CanPlayerHit(Player.Hand) && Result == GameResult.Pending)
             {
-                Player.Hand.Push(MainDeck.Pop());
+                Player.Hand.deck.Push(MainDeck.deck.Pop());
             }
         }
 
@@ -253,83 +222,163 @@ namespace BlackJackGame
         /// </summary>
         public void Stand()
         {
-            if(Result == GameResult.Pending)
+            if (Result == GameResult.Pending)
             {
-                while(BlackJackRules.CanDealerHit(Dealer.Hand, StandLimit))
+                while (BlackJackRules.CanDealerHit(Dealer.Hand, StandLimit))
                 {
-                    Dealer.Hand.Push(MainDeck.Pop());
+                    Dealer.Hand.deck.Push(MainDeck.deck.Pop());
                 }
 
                 Result = BlackJackRules.GetResult(Player, Dealer);
             }
         }
+        public void Init()
+        {
+            // Příprava hry ..
+            Result = GameResult.Pending;
+
+            // Vyčistí ruce hráčů a Dealerů (i rukávy :) )
+            Dealer.Hand.deck.Clear();
+            Player.Hand.deck.Clear();
+
+            // Přiřadí první dvě karty hráči a Dealerovi...
+            for (int i = 0; ++i < 3;)
+            {
+                Dealer.Hand.deck.Push(MainDeck.deck.Pop());
+                Player.Hand.deck.Push(MainDeck.deck.Pop());
+            }
+        }
+        public void Reset()
+        {
+            this.Init();
+            // Pokud je v balíčku méně jak 1/3 karet zamíchá nový balíček
+            if (MainDeck.deck.Count < 16) { MainDeck = BlackJackRules.ShuffledDeck; }
+        }
+
+
+
     }
 
-    /// <summary>
-    /// Samotné spuštění hry.
-    /// Možnosti ovládání.
-    /// </summary>
-    class Program
+    public struct DynamicMenu
     {
-        /// <summary>
-        /// Zobrazí informace o tahu Dealera a hráče.
-        /// </summary>
-        /// <param name="bj"></param>
+        public List<MenuItem> menu;
+        public void CreateMenu()
+        {
+            menu = new List<MenuItem>();
+            menu.Add(new MenuItem("s", "stát", true));
+            menu.Add(new MenuItem("h", "hrát", true));
+            menu.Add(new MenuItem("d", "double", false));
+            menu.Add(new MenuItem("t", "split", false));
+        }
+
+    }
+    public struct MenuItem
+    {
+        public string Key;
+        public string Caption;
+        public bool IsActive;
+
+        public MenuItem(string key, string caption, bool isactive)
+        {
+            Key = key;
+            Caption = caption;
+            IsActive = isactive;
+        }
+    }
+
+    public class Program
+    {
         public static void ShowStats(BlackJack bj)
         {
             // Dealer
             Console.WriteLine("Dealer: ");
-            foreach(Card c in bj.Dealer.Hand)
+            // U dealera se během hry zobrazuje pouze jedna karta
+            if (bj.Result == GameResult.Pending)
             {
-                Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
+
+                Console.WriteLine(string.Format("{0} {1}", bj.Dealer.Hand.deck.Peek().ID, bj.Dealer.Hand.deck.Peek().Suit));
+                Console.WriteLine("* *");
+            }
+            else
+            {
+                foreach (Card c in bj.Dealer.Hand.deck)
+                {
+                    Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
+                }
+                Console.WriteLine("Celkem: " + bj.Dealer.Hand.Value());
             }
 
-            Console.WriteLine("Celkem: " + bj.Dealer.Hand.Value);
 
             Console.WriteLine(Environment.NewLine);
 
             // Hráč
             Console.WriteLine("Hráč: ");
-            foreach (Card c in bj.Player.Hand)
+            foreach (Card c in bj.Player.Hand.deck)
             {
                 Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
             }
 
-            Console.WriteLine("Celkem: " + bj.Player.Hand.Value);
+            Console.WriteLine("Celkem: " + bj.Player.Hand.Value());
 
             Console.WriteLine(Environment.NewLine);
         }
-
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
+
             string input = "";
-            
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
+            DynamicMenu menu = new DynamicMenu();
+            menu.CreateMenu();
+            bool nextGame = true;
             BlackJack bj = new BlackJack(17);
-
-            ShowStats(bj);
-
-            Console.WriteLine("Jsi na řadě. Táhneš (h) nebo stojíš (s)?");
-
-            while (bj.Result == GameResult.Pending)
+            do
             {
+
+                ShowStats(bj);
+
+                while (bj.Result == GameResult.Pending)
+                {
+                    Console.Write("Jsi na řadě. ");
+                    foreach (MenuItem item in menu.menu)
+                    {
+                        if (item.IsActive)
+                        {
+                            Console.Write("{0}:{1}; ", item.Key, item.Caption);
+                        }
+                    }
+                    Console.Write(Environment.NewLine);
+                    input = Console.ReadLine();
+
+                    // Napiš H/h pro hit (hraju) 
+                    // nebo S/s pro stand (stojím)
+                    if (input.ToLower() == "h")
+                    {
+                        bj.Hit();
+                        ShowStats(bj);
+                    }
+                    else
+                    {
+                        bj.Stand();
+                        ShowStats(bj);
+                    }
+                }
+
+                Console.WriteLine(bj.Result);
+                Console.WriteLine("Další hra? A/N");
                 input = Console.ReadLine();
-
-                // Napiš H/h pro hit (hraju) 
-                // nebo S/s pro stand (stojím)
-                if(input.ToLower() == "h")
+                if (input.ToLower() == "a")
                 {
-                    bj.Hit();
-                    ShowStats(bj);
-                }
-                else
-                {
-                    bj.Stand();
-                    ShowStats(bj);
-                }
-            }
+                    nextGame = true;
+                    bj.Reset();
 
-            Console.WriteLine(bj.Result);
+                }
+                else { nextGame = false; }
+
+
+
+            } while (nextGame);
             Console.ReadLine();
         }
     }
+
 }
