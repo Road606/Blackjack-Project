@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace BlackJack
+namespace BlackJackGame
 {
     public enum GameResult { Win = 1, Lose = -1, Draw = 0, Pending = 2 }
 
@@ -214,6 +214,10 @@ namespace BlackJack
             {
                 Player.Hand.deck.Push(MainDeck.deck.Pop());
             }
+            else
+            {
+                Result = BlackJackRules.GetResult(Player, Dealer);
+            }
         }
 
         /// <summary>
@@ -252,7 +256,10 @@ namespace BlackJack
         {
             this.Init();
             // Pokud je v balíčku méně jak 1/3 karet zamíchá nový balíček
-            if (MainDeck.deck.Count < 16) { MainDeck = BlackJackRules.ShuffledDeck; }
+            if (MainDeck.deck.Count < 17)
+            {
+                MainDeck = BlackJackRules.ShuffledDeck;
+            }
         }
 
 
@@ -264,11 +271,13 @@ namespace BlackJack
         public List<MenuItem> menu;
         public void CreateMenu()
         {
-            menu = new List<MenuItem>();
-            menu.Add(new MenuItem("s", "stát", true));
-            menu.Add(new MenuItem("h", "hrát", true));
-            menu.Add(new MenuItem("d", "double", false));
-            menu.Add(new MenuItem("t", "split", false));
+            menu = new List<MenuItem>
+            {
+                new MenuItem("s", "stát", true),
+                new MenuItem("h", "hrát", true),
+                new MenuItem("d", "double", false),
+                new MenuItem("t", "split", false)
+            };
         }
 
     }
@@ -377,8 +386,6 @@ namespace BlackJack
 
 
             } while (nextGame);
-            Console.ReadLine();
         }
     }
-
 }
