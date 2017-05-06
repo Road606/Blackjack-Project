@@ -9,3 +9,4 @@ C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\bin\Debug\BlackJackG
 C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\bin\Debug\BlackJackGame.pdb
 C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.exe
 C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.pdb
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.csprojResolveAssemblyReference.cache

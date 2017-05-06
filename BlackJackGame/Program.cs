@@ -6,6 +6,7 @@ using System.Linq;
 namespace BlackJackGame
 {
     public enum GameResult { Win = 1, Lose = -1, Draw = 0, Pending = 2 }
+    public enum MenuKey { Hit = 0, Stand = 1, Double = 2, Split = 3 }
 
 
 
@@ -195,6 +196,8 @@ namespace BlackJackGame
         public Deck MainDeck;
 
         public int StandLimit;
+
+        public int Bet;
         public BlackJack(int dealerStandLimit) : this()
         {
             // Zamíchá karty a položí na stůl.
@@ -264,21 +267,7 @@ namespace BlackJackGame
 
 
 
-    }
 
-    public struct DynamicMenu
-    {
-        public List<MenuItem> menu;
-        public void CreateMenu()
-        {
-            menu = new List<MenuItem>
-            {
-                new MenuItem("s", "stát", true),
-                new MenuItem("h", "hrát", true),
-                new MenuItem("d", "double", false),
-                new MenuItem("t", "split", false)
-            };
-        }
 
     }
     public struct MenuItem
@@ -293,99 +282,175 @@ namespace BlackJackGame
             Caption = caption;
             IsActive = isactive;
         }
-    }
 
-    public class Program
-    {
-        public static void ShowStats(BlackJack bj)
+
+        public class Program
         {
-            // Dealer
-            Console.WriteLine("Dealer: ");
-            // U dealera se během hry zobrazuje pouze jedna karta
-            if (bj.Result == GameResult.Pending)
-            {
+            public const int MINBET = 5;
 
-                Console.WriteLine(string.Format("{0} {1}", bj.Dealer.Hand.deck.Peek().ID, bj.Dealer.Hand.deck.Peek().Suit));
-                Console.WriteLine("* *");
-            }
-            else
+            public static void CreateMenu(out MenuItem[] menu)
             {
-                foreach (Card c in bj.Dealer.Hand.deck)
+                menu = new MenuItem[4];
+                menu[(int)MenuKey.Hit] = new MenuItem("h", "hrát", true);
+                menu[(int)MenuKey.Stand] = new MenuItem("s", "stát", true);
+                menu[(int)MenuKey.Double] = new MenuItem("d", "double", false);
+                menu[(int)MenuKey.Split] = new MenuItem("t", "split", false);
+            }
+
+
+
+            public static void ShowStats(BlackJack bj)
+            {
+                // Dealer
+                Console.WriteLine("Dealer: ");
+                // U dealera se během hry zobrazuje pouze jedna karta
+                if (bj.Result == GameResult.Pending)
+                {
+
+                    Console.WriteLine(string.Format("{0} {1}", bj.Dealer.Hand.deck.Peek().ID, bj.Dealer.Hand.deck.Peek().Suit));
+                    Console.WriteLine("* *");
+                }
+                else
+                {
+                    foreach (Card c in bj.Dealer.Hand.deck)
+                    {
+                        Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
+                    }
+                    Console.WriteLine("Celkem: " + bj.Dealer.Hand.Value());
+                }
+
+
+                Console.WriteLine(Environment.NewLine);
+
+                // Hráč
+                Console.WriteLine("Hráč: ");
+                foreach (Card c in bj.Player.Hand.deck)
                 {
                     Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
                 }
-                Console.WriteLine("Celkem: " + bj.Dealer.Hand.Value());
+
+                Console.WriteLine("Celkem: " + bj.Player.Hand.Value());
+
+                Console.WriteLine(Environment.NewLine);
             }
-
-
-            Console.WriteLine(Environment.NewLine);
-
-            // Hráč
-            Console.WriteLine("Hráč: ");
-            foreach (Card c in bj.Player.Hand.deck)
-            {
-                Console.WriteLine(string.Format("{0} {1}", c.ID, c.Suit));
-            }
-
-            Console.WriteLine("Celkem: " + bj.Player.Hand.Value());
-
-            Console.WriteLine(Environment.NewLine);
-        }
-        static void Main(string[] args)
-        {
-
-            string input = "";
-            Console.OutputEncoding = System.Text.Encoding.Unicode;
-            DynamicMenu menu = new DynamicMenu();
-            menu.CreateMenu();
-            bool nextGame = true;
-            BlackJack bj = new BlackJack(17);
-            do
+            static void Main(string[] args)
             {
 
-                ShowStats(bj);
-
-                while (bj.Result == GameResult.Pending)
+                string input = "";
+                int bet = 0;
+                Console.OutputEncoding = System.Text.Encoding.Unicode;
+                CreateMenu(out MenuItem[] menu);
+                bool nextGame = true;
+                BlackJack bj = new BlackJack(17);
+                do
                 {
-                    Console.Write("Jsi na řadě. ");
-                    foreach (MenuItem item in menu.menu)
+
+                    while (true)
                     {
-                        if (item.IsActive)
+                        // Žádá uživatele o zadání 
+                        Console.WriteLine("Tvůj kredit je: {0} Kolik sázíš? (minimální sázka je {1})", bj.Player.Credit, MINBET);
+                        try
                         {
-                            Console.Write("{0}:{1}; ", item.Key, item.Caption);
+                            bet = int.Parse(Console.ReadLine());
+                            if (bet > bj.Player.Credit)
+                            {
+                                throw new Exception("Nemáš dostatečný kredit na tuto sázku");
+                            }
+                            if (bet < MINBET)
+                            {
+                                throw new Exception("Sázka je menší než minimální sázka.");
+                            }
+                            break;
                         }
+                        catch (FormatException e)
+                        {
+                            Console.WriteLine("Nebylo zadáno číslo.");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+
                     }
-                    Console.Write(Environment.NewLine);
+                    ShowStats(bj);
+
+                    while (bj.Result == GameResult.Pending)
+                    {
+
+
+                        Console.Write("Jsi na řadě. ");
+
+                        foreach (MenuItem item in menu)
+                        {
+                            if (item.IsActive)
+                            {
+                                Console.Write("{0}:{1}; ", item.Key, item.Caption);
+                            }
+                        }
+                        Console.Write(Environment.NewLine);
+                        input = Console.ReadLine();
+                        MenuItem result = Array.Find(menu, k => k.Key == input.ToLower());
+
+                        //v případě, že uživatel zadá volbu, která sice může být v menu, ale není aktivní, nastaví výslednou klávesu na null, čímž spustí default switch
+                        if (!result.IsActive)
+                        {
+                            result.Key = null;
+                        }
+
+
+                        switch (result.Key)
+                        {
+                            case "h":
+                                bj.Hit();
+                                ShowStats(bj);
+                                break;
+
+
+                            case "s":
+                                bj.Stand();
+                                ShowStats(bj);
+                                break;
+
+                            default:
+                                Console.Write("Nesprávná volba. ");
+                                break;
+                        }
+
+                    }
+
+                    Console.WriteLine(bj.Result);
+                    switch (bj.Result)
+                    {
+                        case GameResult.Win:
+                            bj.Player.Credit += bet;
+                            break;
+                        case GameResult.Lose:
+                            bj.Player.Credit -= bet;
+                            break;
+                        default:
+                            break;
+
+                    }
+                    if (bj.Player.Credit < MINBET)
+                    {
+                        Console.WriteLine("Konec hry...");
+                        Console.ReadLine();
+                        break;
+                    }
+                    Console.WriteLine("Další hra? A/N");
                     input = Console.ReadLine();
-
-                    // Napiš H/h pro hit (hraju) 
-                    // nebo S/s pro stand (stojím)
-                    if (input.ToLower() == "h")
+                    if (input.ToLower() == "a")
                     {
-                        bj.Hit();
-                        ShowStats(bj);
+                        nextGame = true;
+                        bj.Reset();
+
                     }
-                    else
-                    {
-                        bj.Stand();
-                        ShowStats(bj);
-                    }
-                }
-
-                Console.WriteLine(bj.Result);
-                Console.WriteLine("Další hra? A/N");
-                input = Console.ReadLine();
-                if (input.ToLower() == "a")
-                {
-                    nextGame = true;
-                    bj.Reset();
-
-                }
-                else { nextGame = false; }
+                    else { nextGame = false; }
 
 
 
-            } while (nextGame);
+                } while (nextGame);
+            }
         }
     }
 }
