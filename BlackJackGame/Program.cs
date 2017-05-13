@@ -264,11 +264,6 @@ namespace BlackJackGame
                 MainDeck = BlackJackRules.ShuffledDeck;
             }
         }
-
-
-
-
-
     }
     public struct MenuItem
     {
@@ -282,7 +277,7 @@ namespace BlackJackGame
             Caption = caption;
             IsActive = isactive;
         }
-
+    }
 
         public class Program
         {
@@ -296,8 +291,6 @@ namespace BlackJackGame
                 menu[(int)MenuKey.Double] = new MenuItem("d", "double", false);
                 menu[(int)MenuKey.Split] = new MenuItem("t", "split", false);
             }
-
-
 
             public static void ShowStats(BlackJack bj)
             {
@@ -452,5 +445,5 @@ namespace BlackJackGame
                 } while (nextGame);
             }
         }
-    }
+    
 }
