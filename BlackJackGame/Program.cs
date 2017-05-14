@@ -230,15 +230,14 @@ namespace BlackJackGame
         /// </summary>
         public void Stand()
         {
-            if (Result == GameResult.Pending)
-            {
+            
                 while (BlackJackRules.CanDealerHit(Dealer.Hand, StandLimit))
                 {
                     Dealer.Hand.deck.Push(MainDeck.deck.Pop());
                 }
 
                 Result = BlackJackRules.GetResult(Player, Dealer);
-            }
+            
         }
         public void Double()
         {
@@ -342,6 +341,7 @@ namespace BlackJackGame
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             CreateMenu(out MenuItem[] menu);
             bool nextGame = true;
+            bool inputTest = true;
             BlackJack bj = new BlackJack(17);
             do
             {              
@@ -372,10 +372,10 @@ namespace BlackJackGame
                     }
 
                 }
-
+                
                 while (bj.Result == GameResult.Pending)
                 {
-
+                    
                     // kontrola zda má hráč blackjack a zda může hrát double
                     if (bj.Player.Hand.deck.Count < 3 && bj.Player.Hand.Value() < 21 && bj.Player.Credit >= (bet * 2))
                     {
@@ -386,6 +386,7 @@ namespace BlackJackGame
                         menu[(int)MenuKey.Double].IsActive = false;
                         if (!BlackJackRules.HasBlackJack(bj.Dealer.Hand) && BlackJackRules.HasBlackJack(bj.Player.Hand))
                         {
+                            bj.Stand();
                             bj.Result = GameResult.BlackJack;
                             break;
                         }
@@ -393,57 +394,60 @@ namespace BlackJackGame
 
                     if (!BlackJackRules.CanPlayerHit(bj.Player.Hand))
                     {
-                        
-                        bj.Result = BlackJackRules.GetResult(bj.Player, bj.Dealer);
+                        bj.Stand();
                         break;
                     }
-
                     ShowStats(bj);
-                    Console.Write("Jsi na řadě. ");
 
-                    foreach (MenuItem item in menu)
+                    do
                     {
-                        if (item.IsActive)
+                        Console.Write("Jsi na řadě. ");
+
+                        foreach (MenuItem item in menu)
                         {
-                            Console.Write("{0}:{1}; ", item.Key, item.Caption);
+                            if (item.IsActive)
+                            {
+                                Console.Write("{0}:{1}; ", item.Key, item.Caption);
+                            }
                         }
-                    }
-                    Console.Write(Environment.NewLine);
-                    input = Console.ReadLine();
-                    MenuItem result = Array.Find(menu, k => k.Key == input.ToLower());
+                        Console.Write(Environment.NewLine);
+                        input = Console.ReadLine();
+                        MenuItem result = Array.Find(menu, k => k.Key == input.ToLower());
 
-                    //v případě, že uživatel zadá volbu, která sice může být v menu, ale není aktivní, nastaví výslednou klávesu na null, čímž spustí default switch
-                    if (!result.IsActive)
-                    {
-                        result.Key = null;
-                    }
-
-
-                    switch (result.Key)
-                    {
-                        case "h":
-                            bj.Hit();
-                            break;
+                        //v případě, že uživatel zadá volbu, která sice může být v menu, ale není aktivní, nastaví výslednou klávesu na null, čímž spustí default switch
+                        if (!result.IsActive)
+                        {
+                            result.Key = null;
+                        }
 
 
-                        case "s":
-                            bj.Stand();                           
-                            break;
+                        switch (result.Key)
+                        {
+                            case "h":
+                                bj.Hit();
+                                inputTest = true;
+                                break;
 
-                        case "d":
-                            bet *= 2;
-                            bj.Double();                         
-                            break;
 
-                        default:
-                            Console.Write("Nesprávná volba. ");
-                            break;
-                    }
+                            case "s":
+                                bj.Stand();
+                                inputTest = true;
+                                break;
 
+                            case "d":
+                                bet *= 2;
+                                bj.Double();
+                                inputTest = true;
+                                break;
+
+                            default:
+                                Console.Write("Nesprávná volba. ");
+                                inputTest = false;
+                                break;
+                        }
+                    } while (!inputTest);
                 }
-
                 ShowStats(bj);
-
                 switch (bj.Result)
                 {
                     case GameResult.Win:
