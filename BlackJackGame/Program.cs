@@ -107,13 +107,12 @@ namespace BlackJackGame
 
             double aces = deck.deck.Count(c => c.ID == "A");
             double val2 = aces > 0 ? val1 + (10 * aces) : val1;
+            double val3 = aces > 1 ? val1 + 10 : val2;
 
-            return new double[] { val1, val2 }
-            .Select(handVal => new
-            {
-                handVal,
-                weight = Math.Abs(handVal - 21) + (handVal > 21 ? 100 : 0)
-            }).OrderBy(n => n.weight).First().handVal;
+            return new double[] { val1, val2, val3 }
+            .Select(handVal => new { handVal, weight = Math.Abs(handVal - 21) + (handVal > 21 ? 100 : 0)})
+            .OrderBy(n => n.weight)
+            .First().handVal;
         }
 
         /// <summary>
@@ -341,12 +340,12 @@ namespace BlackJackGame
             string input = "";
             int bet = 0;
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            CreateMenu(out MenuItem[] menu);
+            
             bool nextGame = true;
             BlackJack bj = new BlackJack(17);
             do
             {
-
+                CreateMenu(out MenuItem[] menu);
                 while (true)
                 {
                     // Žádá uživatele o zadání sázky
@@ -378,10 +377,11 @@ namespace BlackJackGame
 
                 while (bj.Result == GameResult.Pending)
                 {
+
                     // kontrola zda má hráč blackjack a zda může hrát double
-                    if (bj.Player.Hand.deck.Count < 3 && bj.Player.Hand.Value() < 21 && bj.Player.Credit >=(bet*2))
-                    {                                    
-                        menu[(int)MenuKey.Double].IsActive = true;                        
+                    if (bj.Player.Hand.deck.Count < 3 && bj.Player.Hand.Value() < 21 && bj.Player.Credit >= (bet * 2))
+                    {
+                        menu[(int)MenuKey.Double].IsActive = true;
                     }
                     else
                     {
@@ -391,6 +391,12 @@ namespace BlackJackGame
                             bj.Result = GameResult.BlackJack;
                         }
                     }
+
+                    if (!BlackJackRules.CanPlayerHit(bj.Player.Hand))
+                    {
+                        menu[(int)MenuKey.Hit].IsActive = false;
+                    }      
+      
 
                     Console.Write("Jsi na řadě. ");
 
@@ -493,7 +499,7 @@ namespace BlackJackGame
                     {
                         Console.Write(e.Message);
                     }
-
+                    menu = null;
                 }            
             } while (nextGame);
          }
