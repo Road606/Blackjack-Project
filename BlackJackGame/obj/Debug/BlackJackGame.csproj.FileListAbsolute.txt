@@ -4,3 +4,9 @@ C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\bin\Debug\BlackJackGame.pdb
 C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.csprojResolveAssemblyReference.cache
 C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.exe
 C:\Users\Oli\workspace\BlackJackGame\BlackJackGame\obj\Debug\BlackJackGame.pdb
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\bin\Debug\BlackJackGame.exe.config
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\bin\Debug\BlackJackGame.exe
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\bin\Debug\BlackJackGame.pdb
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.exe
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.pdb
+C:\Users\Rosta\Source\Repos\Blackjack-Project\BlackJackGame\obj\Debug\BlackJackGame.csprojResolveAssemblyReference.cache
