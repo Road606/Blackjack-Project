@@ -340,12 +340,11 @@ namespace BlackJackGame
             string input = "";
             int bet = 0;
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            
+            CreateMenu(out MenuItem[] menu);
             bool nextGame = true;
             BlackJack bj = new BlackJack(17);
             do
-            {
-                CreateMenu(out MenuItem[] menu);
+            {              
                 while (true)
                 {
                     // Žádá uživatele o zadání sázky
@@ -373,7 +372,6 @@ namespace BlackJackGame
                     }
 
                 }
-                ShowStats(bj);
 
                 while (bj.Result == GameResult.Pending)
                 {
@@ -389,15 +387,18 @@ namespace BlackJackGame
                         if (!BlackJackRules.HasBlackJack(bj.Dealer.Hand) && BlackJackRules.HasBlackJack(bj.Player.Hand))
                         {
                             bj.Result = GameResult.BlackJack;
+                            break;
                         }
                     }
 
                     if (!BlackJackRules.CanPlayerHit(bj.Player.Hand))
                     {
-                        menu[(int)MenuKey.Hit].IsActive = false;
-                    }      
-      
+                        
+                        bj.Result = BlackJackRules.GetResult(bj.Player, bj.Dealer);
+                        break;
+                    }
 
+                    ShowStats(bj);
                     Console.Write("Jsi na řadě. ");
 
                     foreach (MenuItem item in menu)
@@ -422,19 +423,16 @@ namespace BlackJackGame
                     {
                         case "h":
                             bj.Hit();
-                            ShowStats(bj);
                             break;
 
 
                         case "s":
-                            bj.Stand();
-                            ShowStats(bj);
+                            bj.Stand();                           
                             break;
 
                         case "d":
                             bet *= 2;
-                            bj.Double();
-                            ShowStats(bj);
+                            bj.Double();                         
                             break;
 
                         default:
@@ -443,6 +441,9 @@ namespace BlackJackGame
                     }
 
                 }
+
+                ShowStats(bj);
+
                 switch (bj.Result)
                 {
                     case GameResult.Win:
@@ -499,7 +500,6 @@ namespace BlackJackGame
                     {
                         Console.Write(e.Message);
                     }
-                    menu = null;
                 }            
             } while (nextGame);
          }
